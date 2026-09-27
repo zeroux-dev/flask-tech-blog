@@ -1,0 +1,75 @@
+{#
+  TechBlog — Flask Blog & Admin Panel
+  Author   : ZERO (Sobhan) — https://github.com/zeroux-dev
+  Telegram : @fesqhli  (https://t.me/fesqhli)
+  License  : MIT — keep this notice when you use or copy this code
+  Copyright (c) 2025-2026 ZERO (Sobhan)
+#}
+{% extends 'admin_dashboard_layout.html' %}
+
+{% block admin_content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h3 class="fw-bold text-dark">مدیریت دسته‌بندی‌ها</h3>
+    <a href="/admin/dashboard" class="btn btn-outline-secondary rounded-pill px-4">بازگشت</a>
+</div>
+
+<div class="card border-0 shadow-sm p-4">
+    <div class="table-responsive">
+        <table class="table table-hover align-middle">
+            <thead class="table-light">
+                <tr>
+                    <th>نام دسته‌بندی</th>
+                    <th>تعداد پست‌ها</th>
+                    <th>عملیات</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for cat_name, count in categories %}
+                <tr>
+                    <td><span class="badge bg-primary fs-6">{{ cat_name }}</span></td>
+                    <td>{{ count }} پست</td>
+                    <td>
+                        <div class="d-flex gap-2">
+                            <!-- دکمه تغییر نام (با مودال) -->
+                            <button class="btn btn-sm btn-warning text-white" data-bs-toggle="modal" data-bs-target="#renameModal{{ loop.index }}">
+                                <i class="bi bi-pencil-square"></i> تغییر نام
+                            </button>
+                            
+                            <!-- دکمه حذف -->
+                            <form action="/admin/category/delete" method="POST" class="d-inline" onsubmit="return confirm('آیا مطمئن هستید؟ پست‌های این دسته به «عمومی» تغییر خواهند کرد.');">
+                                <input type="hidden" name="category_name" value="{{ cat_name }}">
+                                <button class="btn btn-sm btn-danger"><i class="bi bi-trash"></i> حذف</button>
+                            </form>
+                        </div>
+
+                        <!-- مودال تغییر نام -->
+                        <div class="modal fade" id="renameModal{{ loop.index }}" tabindex="-1">
+                            <div class="modal-dialog">
+                                <div class="modal-content">
+                                    <form action="/admin/category/rename" method="POST">
+                                        <div class="modal-header">
+                                            <h5 class="modal-title">تغییر نام دسته‌بندی "{{ cat_name }}"</h5>
+                                        </div>
+                                        <div class="modal-body">
+                                            <input type="hidden" name="old_name" value="{{ cat_name }}">
+                                            <input type="text" name="new_name" class="form-control" placeholder="نام جدید..." required>
+                                        </div>
+                                        <div class="modal-footer">
+                                            <button type="submit" class="btn btn-primary">ذخیره تغییرات</button>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="3" class="text-center text-muted">هنوز هیچ دسته‌بندی وجود ندارد.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

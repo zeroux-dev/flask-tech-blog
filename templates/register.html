@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<!--
+  TechBlog — Flask Blog & Admin Panel
+  Author   : ZERO (Sobhan) — https://github.com/zeroux-dev
+  Telegram : @fesqhli  (https://t.me/fesqhli)
+  License  : MIT — keep this notice when you use or copy this code
+  Copyright (c) 2025-2026 ZERO (Sobhan)
+-->
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="author" content="ZERO (Sobhan) - t.me/fesqhli">
+    <title>ثبت نام</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/particles.js/2.0.0/particles.min.js"></script>
+    <style>
+        /* نوار قدرت پسورد */
+        .strength-meter {
+            height: 5px;
+            background: #e0e0e0;
+            border-radius: 5px;
+            margin: 10px 0;
+            overflow: hidden;
+            transition: 0.3s;
+        }
+        .strength-bar {
+            height: 100%; width: 0; transition: 0.3s;
+        }
+        .strength-text {
+            font-size: 11px; text-align: right; margin-bottom: 10px; font-weight: bold;
+        }
+        
+        /* تگ‌های شروط */
+        .req-tags {
+            display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: 15px; display: none;
+        }
+        .req-tag {
+            font-size: 10px; padding: 3px 8px; border-radius: 12px;
+            background: #f8f9fa; color: #666; border: 1px solid #ddd;
+            transition: 0.3s; display: flex; align-items: center; gap: 3px;
+        }
+        .req-tag.valid {
+            background: #d4edda; color: #155724; border-color: #c3e6cb;
+        }
+        .req-tag.invalid {
+            background: #f8d7da; color: #721c24; border-color: #f5c6cb;
+        }
+    </style>
+</head>
+<body class="auth-page-body">
+    <div id="particles-js"></div>
+
+    <div class="auth-box" style="max-width: 480px;">
+        <div class="auth-header">
+            <i class="fas fa-user-shield"></i>
+            <h3>ایجاد حساب امن</h3>
+            <p>اطلاعات خود را وارد کنید</p>
+        </div>
+
+        {% with messages = get_flashed_messages() %}
+            {% if messages %}
+                <div style="background:#ffebee; color:#c62828; padding:10px; border-radius:8px; margin-bottom:15px; font-size:13px; text-align:right;">
+                    {{ messages[0] }}
+                </div>
+            {% endif %}
+        {% endwith %}
+
+        <form method="POST" enctype="multipart/form-data" id="regForm">
+            <input type="text" name="username" class="auth-input" placeholder="نام کاربری" required>
+            
+            <div style="display:flex; gap:10px;">
+                <input type="text" name="phone" class="auth-input" placeholder="موبایل" required>
+                <select name="gender" class="auth-input" required style="width: 120px;">
+                    <option value="" disabled selected>جنسیت</option>
+                    <option value="مرد">مرد</option>
+                    <option value="زن">زن</option>
+                </select>
+            </div>
+            
+            <input type="email" name="email" class="auth-input" placeholder="ایمیل">
+            
+            <div class="mb-3 text-end">
+                <label style="font-size:12px; color:#666;">عکس پروفایل:</label>
+                <input type="file" name="profile_pic" class="auth-input" accept="image/*" style="padding:5px;">
+            </div>
+
+            <div style="position: relative;">
+                <input type="password" name="password" id="passwordField" class="auth-input" placeholder="رمز عبور قوی" required onfocus="showReqs()" onkeyup="checkPassword()">
+                <i class="fas fa-eye show-pass-icon" onclick="togglePassword()"></i>
+            </div>
+
+            <!-- نوار قدرت -->
+            <div class="strength-meter"><div class="strength-bar" id="strengthBar"></div></div>
+            <div class="strength-text" id="strengthText"></div>
+
+            <!-- لیست شروط (تگ‌ها) -->
+            <div class="req-tags" id="reqTags">
+                <span id="req-len" class="req-tag invalid"><i class="fas fa-times"></i> ۸ کاراکتر</span>
+                <span id="req-num" class="req-tag invalid"><i class="fas fa-times"></i> عدد</span>
+                <span id="req-low" class="req-tag invalid"><i class="fas fa-times"></i> حرف کوچک</span>
+                <span id="req-cap" class="req-tag invalid"><i class="fas fa-times"></i> حرف بزرگ</span>
+                <span id="req-spec" class="req-tag invalid"><i class="fas fa-times"></i> کاراکتر خاص (@#$)</span>
+            </div>
+
+            <button type="submit" class="btn-auth-submit" id="submitBtn" disabled style="opacity: 0.6; cursor: not-allowed;">ثبت نام</button>
+        </form>
+        
+        <div class="auth-footer">
+            قبلاً ثبت‌نام کرده‌اید؟ <a href="/login">وارد شوید</a>
+        </div>
+    </div>
+
+    <script>
+        particlesJS("particles-js", { "particles": { "number": { "value": 60 }, "color": { "value": "#4e54c8" }, "shape": { "type": "circle" }, "opacity": { "value": 0.5 }, "size": { "value": 3 }, "line_linked": { "enable": true, "distance": 150, "color": "#4e54c8", "opacity": 0.2, "width": 1 }, "move": { "enable": true, "speed": 2 } }, "interactivity": { "detect_on": "canvas", "events": { "onhover": { "enable": true, "mode": "grab" } } } });
+        
+        function togglePassword() { const f = document.getElementById("passwordField"); const i = document.querySelector(".show-pass-icon"); if (f.type === "password") { f.type = "text"; i.classList.replace("fa-eye", "fa-eye-slash"); } else { f.type = "password"; i.classList.replace("fa-eye-slash", "fa-eye"); } }
+
+        function showReqs() { document.getElementById('reqTags').style.display = 'flex'; }
+
+        function checkPassword() {
+            const val = document.getElementById('passwordField').value;
+            let score = 0;
+
+            // بررسی شروط و آپدیت تگ‌ها
+            if (val.length >= 8) { setValid('req-len', true); score++; } else setValid('req-len', false);
+            if (/\d/.test(val)) { setValid('req-num', true); score++; } else setValid('req-num', false);
+            if (/[a-z]/.test(val)) { setValid('req-low', true); score++; } else setValid('req-low', false);
+            if (/[A-Z]/.test(val)) { setValid('req-cap', true); score++; } else setValid('req-cap', false);
+            if (/[^A-Za-z0-9]/.test(val)) { setValid('req-spec', true); score++; } else setValid('req-spec', false);
+
+            // آپدیت نوار قدرت
+            const bar = document.getElementById('strengthBar');
+            const txt = document.getElementById('strengthText');
+            const btn = document.getElementById('submitBtn');
+
+            if (score <= 2) {
+                bar.style.width = '30%'; bar.style.backgroundColor = '#dc3545'; txt.innerHTML = '🔴 ضعیف'; txt.style.color = '#dc3545';
+                btn.disabled = true; btn.style.opacity = '0.6';
+            } else if (score === 3 || score === 4) {
+                bar.style.width = '60%'; bar.style.backgroundColor = '#ffc107'; txt.innerHTML = '🟠 متوسط'; txt.style.color = '#ffc107';
+                btn.disabled = true; btn.style.opacity = '0.6';
+            } else if (score === 5) {
+                bar.style.width = '100%'; bar.style.backgroundColor = '#28a745'; txt.innerHTML = '🟢 عالی!'; txt.style.color = '#28a745';
+                btn.disabled = false; btn.style.opacity = '1'; btn.style.cursor = 'pointer';
+            }
+        }
+
+        function setValid(id, isValid) {
+            const el = document.getElementById(id);
+            const icon = el.querySelector('i');
+            if (isValid) {
+                el.classList.replace('invalid', 'valid');
+                icon.className = 'fas fa-check';
+            } else {
+                el.classList.replace('valid', 'invalid');
+                icon.className = 'fas fa-times';
+            }
+        }
+    </script>
+</body>
+</html>

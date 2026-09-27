@@ -1,0 +1,68 @@
+{#
+  TechBlog — Flask Blog & Admin Panel
+  Author   : ZERO (Sobhan) — https://github.com/zeroux-dev
+  Telegram : @fesqhli  (https://t.me/fesqhli)
+  License  : MIT — keep this notice when you use or copy this code
+  Copyright (c) 2025-2026 ZERO (Sobhan)
+#}
+{% extends 'base.html' %}
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <article class="card border-0 shadow-sm p-0 mb-5 overflow-hidden">
+            {% if post.image_file %}
+                <img src="{{ url_for('static', filename='uploads/' + post.image_file) }}" class="img-fluid w-100" style="max-height: 400px; object-fit: cover;">
+            {% endif %}
+            <div class="card-body p-4 p-md-5">
+                <div class="mb-3"><span class="badge bg-primary px-3 py-2">{{ post.category }}</span></div>
+                <h1 class="fw-bold mb-3 display-6">{{ post.title }}</h1>
+                <div class="d-flex justify-content-between text-muted mb-4 pb-3 border-bottom small">
+                    <div class="d-flex align-items-center gap-2">
+                        <div class="bg-light rounded-circle d-flex align-items-center justify-content-center" style="width:30px;height:30px;"><i class="fas fa-user text-dark"></i></div>
+                        <span class="fw-bold text-dark">{{ post.author.username }}</span> <span class="mx-2">|</span> <span>{{ post.date_posted.strftime('%Y/%m/%d') }}</span>
+                    </div>
+                    <div class="d-flex gap-3"><span><i class="far fa-eye"></i> {{ post.views }}</span><span><i class="fas fa-heart text-danger"></i> {{ post.likes|length }}</span></div>
+                </div>
+                <div class="lh-lg fs-5 text-justify mb-5 post-content">{{ post.content }}</div>
+                <div class="d-flex justify-content-between align-items-center">
+                    <a href="/post/{{ post.id }}/like" class="btn btn-outline-danger rounded-pill px-4"><i class="bi {% if user_liked %}bi-heart-fill{% else %}bi-heart{% endif %}"></i> پسندیدم</a>
+                    {% if current_user.is_authenticated and (post.author == current_user or current_user.username == 'admin') %}
+                    <div>
+                        <a href="{{ url_for('update_post', post_id=post.id) }}" class="btn btn-sm btn-warning mx-1">ویرایش</a>
+                        <form action="{{ url_for('delete_post', post_id=post.id) }}" method="POST" class="d-inline"><button class="btn btn-sm btn-danger" onclick="return confirm('حذف؟')">حذف</button></form>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </article>
+        <div class="card border-0 shadow-sm p-4">
+            <h5 class="fw-bold mb-4">نظرات ({{ post.comments|length }})</h5>
+            <form method="POST" class="mb-5" id="commentForm">
+                <textarea name="body" id="commentBody" class="form-control bg-light border-0 mb-2" rows="3" placeholder="دیدگاه خود را بنویسید..." required></textarea>
+                <button type="submit" class="btn btn-primary btn-sm px-4 rounded-pill">ارسال</button>
+            </form>
+            {% for comment in post.comments %}
+            <div class="d-flex mb-4">
+                <div class="flex-shrink-0"><div class="bg-light text-primary rounded-circle d-flex align-items-center justify-content-center fw-bold" style="width: 45px; height: 45px;">{{ comment.author.username[0]|upper }}</div></div>
+                <div class="flex-grow-1 ms-3">
+                    <div class="d-flex justify-content-between align-items-center mb-1">
+                        <h6 class="fw-bold m-0">{{ comment.author.username }}</h6>
+                        <div class="d-flex gap-2">
+                            <a href="/comment/{{ comment.id }}/like" class="text-muted text-decoration-none small"><i class="bi bi-heart{{ '-fill text-danger' if current_user.is_authenticated and comment.likes|selectattr('user_id', 'equalto', current_user.id)|list else '' }}"></i> {{ comment.likes|length }}</a>
+                            <button onclick="replyTo('{{ comment.author.username }}')" class="btn btn-sm p-0 text-muted"><i class="fas fa-reply"></i></button>
+                            <button type="button" class="btn btn-sm p-0 text-muted" data-bs-toggle="modal" data-bs-target="#reportModal{{ comment.id }}"><i class="fas fa-flag"></i></button>
+                            {% if current_user.is_authenticated and (current_user.username == 'admin' or current_user == comment.post.author or current_user == comment.author) %}
+                            <form action="{{ url_for('delete_comment', comment_id=comment.id) }}" method="POST"><button class="btn p-0 text-danger border-0 small"><i class="fas fa-trash"></i></button></form>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <p class="text-muted mb-2 small">{{ comment.body }}</p>
+                </div>
+            </div>
+            <div class="modal fade" id="reportModal{{ comment.id }}" tabindex="-1"><div class="modal-dialog"><div class="modal-content"><form action="/comment/{{ comment.id }}/report" method="POST"><div class="modal-header"><h5 class="modal-title">گزارش تخلف</h5></div><div class="modal-body"><select name="reason" class="form-select"><option>توهین آمیز</option><option>اسپم</option></select></div><div class="modal-footer"><button type="submit" class="btn btn-danger btn-sm">ارسال</button></div></form></div></div></div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+<script>function replyTo(username){const box=document.getElementById('commentBody');box.value='@'+username+' '+box.value;box.focus();}</script>
+{% endblock %}

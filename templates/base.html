@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<!--
+  TechBlog — Flask Blog & Admin Panel
+  Author   : ZERO (Sobhan) — https://github.com/zeroux-dev
+  Telegram : @fesqhli  (https://t.me/fesqhli)
+  License  : MIT — keep this notice when you use or copy this code
+  Copyright (c) 2025-2026 ZERO (Sobhan)
+-->
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="author" content="ZERO (Sobhan) - t.me/fesqhli">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TechBlog | دنیای تکنولوژی</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    
+    <!-- تنظیم اولیه تم -->
+    <script>
+        // چک کردن تم ذخیره شده برای جلوگیری از پرش رنگ
+        if (localStorage.getItem('theme') === 'dark' || (!localStorage.getItem('theme') && document.cookie.includes('theme=dark'))) {
+            document.documentElement.classList.add('dark-mode');
+        }
+    </script>
+</head>
+<body class="{{ 'dark-mode' if request.cookies.get('theme') == 'dark' else '' }}">
+
+    <!-- نوار سیاه بالا -->
+    <div class="top-bar">
+        <div class="container d-flex justify-content-between align-items-center">
+            <div class="small">
+                <i class="fas fa-envelope ms-2 text-primary"></i> info@techblog.ir 
+                <span class="mx-3 opacity-50">|</span> 
+                <i class="fab fa-telegram ms-2 text-primary"></i> @fesqhli
+            </div>
+            <div class="social-links">
+                <a href="https://github.com/zeroux-dev"><i class="fab fa-github"></i></a>
+                <a href="#"><i class="fab fa-twitter"></i></a>
+                <a href="https://t.me/fesqhli"><i class="fab fa-telegram"></i></a>
+            </div>
+        </div>
+    </div>
+
+    <!-- منوی اصلی -->
+    <nav class="navbar navbar-expand-lg sticky-top main-navbar">
+        <div class="container">
+            <!-- لوگو -->
+            <a class="navbar-brand fw-bold d-flex align-items-center" href="/">
+                <i class="fas fa-cube text-primary ms-2 fs-4"></i>
+                Tech<span style="color:var(--text-dark)">Blog</span>
+            </a>
+            
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#nav">
+                <span class="navbar-toggler-icon" style="filter: invert(0.5);"></span>
+            </button>
+
+            <div class="collapse navbar-collapse" id="nav">
+                <!-- لینک‌های وسط -->
+                <ul class="navbar-nav mx-auto align-items-center">
+                    <li class="nav-item"><a class="nav-link" href="/">خانه</a></li>
+                    
+                    <!-- دسته‌بندی‌ها -->
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown">دسته‌بندی‌ها</a>
+                        <ul class="dropdown-menu text-end shadow-sm border-0">
+                            {% for cat in all_categories %}
+                                <li><a class="dropdown-item" href="/?category={{ cat }}">{{ cat }}</a></li>
+                            {% else %}
+                                <li><span class="dropdown-item text-muted small">هنوز دسته‌ای نیست</span></li>
+                            {% endfor %}
+                        </ul>
+                    </li>
+                    
+                    <li class="nav-item"><a class="nav-link" href="#">درباره ما</a></li>
+                    
+                    <!-- سرچ باکس -->
+                    <li class="nav-item ms-3">
+                        <form action="/" method="GET" class="d-flex m-0">
+                            <input type="text" name="q" class="search-input" placeholder="جستجو..." required>
+                        </form>
+                    </li>
+                </ul>
+
+                <!-- بخش سمت چپ -->
+                <div class="d-flex align-items-center gap-3 mt-3 mt-lg-0">
+                    
+                    <!-- دکمه تغییر تم -->
+                    <button class="btn btn-sm btn-outline-secondary rounded-circle" onclick="toggleTheme()">
+                        <i id="theme-icon" class="fas fa-moon"></i>
+                    </button>
+
+                    <!-- پروفایل / ورود -->
+                    {% if current_user.is_authenticated %}
+                        <div class="dropdown">
+                            <a href="#" class="profile-btn dropdown-toggle d-flex align-items-center text-decoration-none" data-bs-toggle="dropdown" style="gap: 10px; padding: 5px 15px; border-radius: 50px; border: 1px solid var(--border-color); background: var(--light);">
+                                
+                                <!-- نمایش عکس پروفایل یا آیکون هوشمند -->
+                                {% if current_user.profile_pic %}
+                                    <img src="{{ url_for('static', filename='uploads/' + current_user.profile_pic) }}" class="avatar-img" style="width:32px; height:32px; border-radius:50%; object-fit:cover; border:2px solid var(--primary);">
+                                {% else %}
+                                    <!-- اگر عکس نداشت، بر اساس جنسیت -->
+                                    {% if current_user.gender == 'مرد' %}
+                                        <div class="avatar-circle bg-info text-white" style="width:32px; height:32px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-weight:bold;">
+                                            <i class="fas fa-male"></i>
+                                        </div>
+                                    {% elif current_user.gender == 'زن' %}
+                                        <div class="avatar-circle bg-danger text-white" style="width:32px; height:32px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-weight:bold;">
+                                            <i class="fas fa-female"></i>
+                                        </div>
+                                    {% else %}
+                                        <div class="avatar-circle bg-primary text-white" style="width:32px; height:32px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-weight:bold;">
+                                            {{ current_user.username[0]|upper }}
+                                        </div>
+                                    {% endif %}
+                                {% endif %}
+                                
+                                <span class="username-text ms-1 small fw-bold" style="color:var(--text-dark)">{{ current_user.username }}</span>
+                            </a>
+
+                            <ul class="dropdown-menu text-end shadow-lg border-0 mt-2">
+                                {% if current_user.username == 'admin' %}
+                                    <li><a class="dropdown-item" href="/admin/dashboard"><i class="fas fa-tachometer-alt ms-2 text-primary"></i> داشبورد</a></li>
+                                {% endif %}
+                                <li><a class="dropdown-item" href="/post/new"><i class="fas fa-pen ms-2 text-success"></i> نوشتن پست</a></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item text-danger" href="/logout"><i class="fas fa-sign-out-alt ms-2"></i> خروج</a></li>
+                            </ul>
+                        </div>
+                    {% else %}
+                        <a href="/login" class="btn btn-primary rounded-pill px-4 fw-bold shadow-sm">
+                            <i class="fas fa-user ms-2"></i> ورود / عضویت
+                        </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- محتوای اصلی -->
+    <div style="min-height: 60vh;">
+        <div class="container mt-3">
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, msg in messages %}
+                        <div class="alert alert-{{ category if category != 'message' else 'info' }} alert-dismissible fade show shadow-sm">
+                            {{ msg }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+        </div>
+        {% block content %}{% endblock %}
+    </div>
+
+    <!-- فوتر حرفه‌ای V4 (کد شما) -->
+    <footer class="pro-footer-v4">
+        <div class="container">
+            <!-- ویژگی‌ها -->
+            <div class="footer-features">
+                <div class="feature-item"><i class="fas fa-bolt"></i><div class="feature-info"><h5>سرعت بالا</h5><p>در انتشار اخبار</p></div></div>
+                <div class="feature-item"><i class="fas fa-check-circle"></i><div class="feature-info"><h5>محتوای معتبر</h5><p>توسط نویسندگان خبره</p></div></div>
+                <div class="feature-item"><i class="fas fa-users"></i><div class="feature-info"><h5>جامعه فعال</h5><p>هزاران کاربر</p></div></div>
+            </div>
+
+            <!-- هدر شبکه‌های اجتماعی -->
+            <div class="social-header">
+                <div class="social-glass-bar">
+                    <div class="bar-content-right"><p class="m-0 fw-bold text-primary">ما را در شبکه‌های اجتماعی دنبال کنید:</p></div>
+                    <div class="social-wrapper">
+                        <a href="https://github.com/zeroux-dev" class="s-icon instagram"><i class="fab fa-github"></i></a>
+                        <a href="https://t.me/fesqhli" class="s-icon telegram"><i class="fab fa-telegram"></i></a>
+                        <a href="#" class="s-icon whatsapp"><i class="fab fa-whatsapp"></i></a>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- ستون‌ها -->
+            <div class="footer-main-grid">
+                <div class="f-col">
+                    <h4>درباره تک‌بلاگ</h4>
+                    <p class="about-text">ما در تک‌بلاگ تلاش می‌کنیم جدیدترین اخبار و مقالات دنیای تکنولوژی را با بالاترین کیفیت در اختیار شما قرار دهیم.</p>
+                    <div class="newsletter-box">
+                        <input type="text" placeholder="ایمیل شما...">
+                        <button>عضویت</button>
+                    </div>
+                </div>
+                <div class="f-col">
+                    <h4>دسترسی سریع</h4>
+                    <ul class="f-links">
+                        <li><a href="/">صفحه اصلی</a></li>
+                        <li><a href="/login">ورود به حساب</a></li>
+                        <li><a href="/register">ثبت نام</a></li>
+                    </ul>
+                </div>
+                <div class="f-col">
+                    <h4>دسته‌بندی‌ها</h4>
+                    <ul class="f-links">
+                        {% for cat in all_categories[:4] %}
+                            <li><a href="/?category={{ cat }}">{{ cat }}</a></li>
+                        {% endfor %}
+                    </ul>
+                </div>
+                <div class="f-col contact-col">
+                    <h4>تماس با ما</h4>
+                    <div class="info-item"><i class="fab fa-telegram"></i> <span>@fesqhli</span></div>
+                    <div class="info-item"><i class="fas fa-envelope"></i> <span>info@techblog.ir</span></div>
+                    <div class="info-item"><i class="fas fa-map-marker-alt"></i> <span>دانشگاه میرزا کوچک</span></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- کپی‌رایت -->
+        <div class="footer-bottom-bar" style="background: rgba(0,0,0,0.03); padding: 20px 0; margin-top: 40px; border-top: 1px solid var(--border-color);">
+            <div class="container text-center">
+                <p class="m-0 small text-muted">طراحی و توسعه: <a href="https://github.com/zeroux-dev" style="color: var(--primary); font-weight:700;">ZERO (Sobhan)</a> · <a href="https://t.me/fesqhli" style="color: var(--primary);">@fesqhli</a> &copy; 2025-2026</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- اسکریپت تغییر تم (هماهنگ با CSS فعلی) -->
+    <script>
+        function updateThemeIcon(isDark) {
+            const icon = document.getElementById('theme-icon');
+            if (!icon) return;
+            if (isDark) {
+                icon.className = 'fas fa-sun text-warning';
+            } else {
+                icon.className = 'fas fa-moon text-secondary';
+            }
+        }
+
+        function toggleTheme() {
+            document.body.classList.toggle('dark-mode');
+            const isDark = document.body.classList.contains('dark-mode');
+            
+            // ذخیره
+            document.cookie = "theme=" + (isDark ? "dark" : "light") + "; path=/; max-age=31536000";
+            localStorage.setItem('theme', isDark ? 'dark' : 'light');
+            
+            updateThemeIcon(isDark);
+        }
+
+        // بررسی هنگام لود
+        document.addEventListener('DOMContentLoaded', function() {
+            const savedTheme = localStorage.getItem('theme') || (document.cookie.includes('theme=dark') ? 'dark' : 'light');
+            const isDark = savedTheme === 'dark';
+            
+            if (isDark) {
+                document.body.classList.add('dark-mode');
+            } else {
+                document.body.classList.remove('dark-mode');
+            }
+            updateThemeIcon(isDark);
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,61 @@
+{#
+  TechBlog — Flask Blog & Admin Panel
+  Author   : ZERO (Sobhan) — https://github.com/zeroux-dev
+  Telegram : @fesqhli  (https://t.me/fesqhli)
+  License  : MIT — keep this notice when you use or copy this code
+  Copyright (c) 2025-2026 ZERO (Sobhan)
+#}
+{% extends 'admin_dashboard_layout.html' %}
+{% block admin_content %}
+<a href="/admin/users" class="btn btn-outline-secondary mb-4">بازگشت</a>
+
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card border-0 shadow-sm p-5 text-center position-relative">
+            
+            <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center mx-auto mb-3" style="width: 100px; height: 100px; font-size: 40px; border: 4px solid white; box-shadow: 0 5px 15px rgba(0,0,0,0.1);">
+                {% if user.profile_pic %}
+                    <img src="{{ url_for('static', filename='uploads/' + user.profile_pic) }}" class="rounded-circle w-100 h-100" style="object-fit:cover;">
+                {% else %}
+                    {{ user.username[0]|upper }}
+                {% endif %}
+            </div>
+            
+            <h2 class="fw-bold">{{ user.username }}</h2>
+            <p class="text-muted mb-4">{{ user.email or '---' }}</p>
+
+            <div class="row g-3 mb-4">
+                <div class="col-4">
+                    <div class="border rounded p-2 bg-light">
+                        <small class="text-muted d-block">پست‌ها</small>
+                        <strong class="fs-5 text-dark">{{ user.posts|length }}</strong>
+                    </div>
+                </div>
+                <div class="col-4">
+                    <div class="border rounded p-2 bg-light">
+                        <small class="text-muted d-block">نظرات</small>
+                        <strong class="fs-5 text-dark">{{ user.comments|length }}</strong>
+                    </div>
+                </div>
+                <div class="col-4">
+                    <div class="border rounded p-2 bg-light">
+                        <small class="text-muted d-block">وضعیت</small>
+                        <strong class="fs-5 text-success">فعال</strong>
+                    </div>
+                </div>
+            </div>
+
+            <div class="text-start border-top pt-4">
+                <h6 class="fw-bold mb-3">اقدامات مدیریتی</h6>
+                <div class="d-flex gap-2">
+                    <form action="/admin/user/{{ user.id }}/reset_pass" method="POST" onsubmit="return confirm('آیا مطمئن هستید؟ یک رمز عبور موقت تصادفی ساخته می‌شود.');">
+                        <button class="btn btn-warning text-white"><i class="bi bi-key-fill"></i> ساخت رمز موقت جدید</button>
+                    </form>
+                    <button class="btn btn-outline-danger"><i class="bi bi-slash-circle"></i> مسدود کردن</button>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+{% endblock %}

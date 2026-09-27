@@ -1,0 +1,67 @@
+{#
+  TechBlog — Flask Blog & Admin Panel
+  Author   : ZERO (Sobhan) — https://github.com/zeroux-dev
+  Telegram : @fesqhli  (https://t.me/fesqhli)
+  License  : MIT — keep this notice when you use or copy this code
+  Copyright (c) 2025-2026 ZERO (Sobhan)
+#}
+{% extends 'base.html' %}
+
+{% block content %}
+{% if not request.args.get('q') %}
+<section class="hero-section">
+    <div class="container">
+        <h1 class="hero-title">دنیای تکنولوژی در دستان تو</h1>
+        <p class="hero-subtitle mb-4">بهترین مقالات برنامه‌نویسی، هوش مصنوعی و گجت‌ها</p>
+        <a href="#posts" class="btn-hero">شروع خواندن</a>
+    </div>
+</section>
+{% endif %}
+
+<div class="container" id="posts">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h3 class="fw-bold border-bottom pb-2 border-primary d-inline-block" style="color:var(--text-dark)">
+            {% if request.args.get('q') %} نتایج جستجو برای: "{{ request.args.get('q') }}" {% else %} {{ page_title }} {% endif %}
+        </h3>
+    </div>
+
+    <div class="row g-4">
+        {% for post in posts %}
+        <div class="col-md-4">
+            <!-- لینک جدید: /read/id -->
+            <a href="{{ url_for('post_detail', post_id=post.id) }}" class="post-card text-decoration-none">
+                <div class="post-img" {% if post.image_file %}style="background-image: url('{{ url_for('static', filename='uploads/' + post.image_file) }}');"{% endif %}>
+                    {% if not post.image_file %}<i class="fas fa-laptop-code"></i>{% endif %}
+                </div>
+                
+                <div class="post-body">
+                    <div class="d-flex justify-content-between mb-2">
+                        <span class="badge bg-primary bg-opacity-10 text-primary">{{ post.category }}</span>
+                        <small class="text-muted">{{ estimate_reading_time(post.content) }} دقیقه</small>
+                    </div>
+                    <h5 class="post-title">{{ post.title }}</h5>
+                    <p class="text-muted small flex-grow-1">{{ post.content[:80] }}...</p>
+                    
+                    <div class="post-meta">
+                        <span><i class="far fa-user"></i> {{ post.author.username }}</span>
+                        <div class="d-flex gap-3">
+                            <span><i class="far fa-eye"></i> {{ post.views }}</span>
+                            <span><i class="fas fa-heart text-danger"></i> {{ post.likes|length }}</span>
+                        </div>
+                    </div>
+                </div>
+            </a>
+        </div>
+        {% else %}
+        <div class="col-12 text-center py-5">
+            <div style="background: var(--card-bg); padding: 50px; border-radius: 20px; box-shadow: 0 5px 20px rgba(0,0,0,0.05);">
+                <i class="fas fa-search fa-4x text-muted mb-3" style="opacity: 0.3;"></i>
+                <h4 class="text-muted fw-bold">نتیجه‌ای یافت نشد!</h4>
+                <p class="text-muted small">متاسفانه پستی با این مشخصات پیدا نکردیم.</p>
+                <a href="/" class="btn btn-primary rounded-pill px-4 mt-3">بازگشت</a>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

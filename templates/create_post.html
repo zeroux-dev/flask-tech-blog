@@ -1,0 +1,51 @@
+{#
+  TechBlog — Flask Blog & Admin Panel
+  Author   : ZERO (Sobhan) — https://github.com/zeroux-dev
+  Telegram : @fesqhli  (https://t.me/fesqhli)
+  License  : MIT — keep this notice when you use or copy this code
+  Copyright (c) 2025-2026 ZERO (Sobhan)
+#}
+{% extends "base.html" %}
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-6 col-md-8">
+        <div class="card p-4 border-0 shadow-sm mt-4">
+            <h4 class="mb-4 fw-bold text-primary border-bottom pb-3">{{ title }}</h4>
+            
+            <!-- فرم با قابلیت آپلود فایل (enctype) -->
+            <form method="POST" enctype="multipart/form-data">
+                <div class="mb-3">
+                    <label class="form-label text-muted small">عنوان مقاله</label>
+                    <input type="text" name="title" class="form-control" value="{{ post.title if post else '' }}" required>
+                </div>
+                
+                <div class="mb-3">
+                    <label class="form-label text-muted small">دسته‌بندی</label>
+                    <input list="categories" name="category" class="form-control" placeholder="انتخاب یا تایپ کنید..." value="{{ post.category if post else '' }}" required>
+                    <datalist id="categories">
+                        {% for cat in all_categories %}
+                            <option value="{{ cat }}">
+                        {% endfor %}
+                    </datalist>
+                </div>
+
+                <!-- فیلد آپلود تصویر -->
+                <div class="mb-3">
+                    <label class="form-label text-muted small">تصویر شاخص (اختیاری)</label>
+                    <input type="file" name="image" class="form-control" accept="image/*">
+                </div>
+
+                <div class="mb-4">
+                    <label class="form-label text-muted small">محتوا</label>
+                    <textarea name="content" class="form-control" rows="8" required>{{ post.content if post else '' }}</textarea>
+                </div>
+                
+                <div class="d-flex justify-content-end gap-2">
+                    <a href="/" class="btn btn-light rounded-pill px-4">انصراف</a>
+                    <button type="submit" class="btn btn-primary rounded-pill px-4">انتشار</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

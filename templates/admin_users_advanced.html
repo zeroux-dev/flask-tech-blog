@@ -1,0 +1,90 @@
+{#
+  TechBlog — Flask Blog & Admin Panel
+  Author   : ZERO (Sobhan) — https://github.com/zeroux-dev
+  Telegram : @fesqhli  (https://t.me/fesqhli)
+  License  : MIT — keep this notice when you use or copy this code
+  Copyright (c) 2025-2026 ZERO (Sobhan)
+#}
+{% extends 'admin_dashboard_layout.html' %}
+
+{% block admin_content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h3 class="fw-bold text-dark m-0">مدیریت پیشرفته کاربران</h3>
+        <p class="text-muted small">لیست کامل اعضا با جزئیات دقیق</p>
+    </div>
+    
+    <form action="" method="GET" class="d-flex">
+        <input type="text" name="q" class="form-control rounded-pill ps-4" placeholder="جستجوی کاربر..." style="width: 250px;">
+        <button class="btn btn-primary rounded-pill ms-2 px-4">جستجو</button>
+    </form>
+</div>
+
+<div class="card border-0 shadow-sm p-0 overflow-hidden" style="border-radius: 15px;">
+    <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+            <thead class="bg-light text-muted">
+                <tr>
+                    <th class="py-3 ps-4">کاربر</th>
+                    <th class="py-3">اطلاعات تماس</th>
+                    <th class="py-3">نقش</th>
+                    <th class="py-3">آمار</th>
+                    <th class="py-3">تاریخ عضویت</th>
+                    <th class="py-3 text-end pe-4">عملیات</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for u in users %}
+                <tr>
+                    <td class="ps-4">
+                        <div class="d-flex align-items-center">
+                            <div class="position-relative">
+                                {% if u.profile_pic %}
+                                    <img src="{{ url_for('static', filename='uploads/' + u.profile_pic) }}" class="rounded-circle" width="45" height="45" style="object-fit:cover;">
+                                {% else %}
+                                    <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center fw-bold" style="width:45px; height:45px;">{{ u.username[0]|upper }}</div>
+                                {% endif %}
+                                <span class="position-absolute bottom-0 end-0 bg-success border border-white rounded-circle p-1"></span>
+                            </div>
+                            <div class="ms-3">
+                                <h6 class="mb-0 fw-bold text-dark">{{ u.username }}</h6>
+                                <small class="text-muted">{{ u.gender or 'نامشخص' }}</small>
+                            </div>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="d-flex flex-column small">
+                            <span class="text-dark"><i class="bi bi-envelope me-1"></i> {{ u.email or '---' }}</span>
+                            <span class="text-muted"><i class="bi bi-phone me-1"></i> {{ u.phone or '---' }}</span>
+                        </div>
+                    </td>
+                    <td>
+                        {% if u.username == 'admin' %}
+                            <span class="badge bg-danger bg-opacity-10 text-danger px-3 py-2 rounded-pill">مدیر کل</span>
+                        {% else %}
+                            <span class="badge bg-info bg-opacity-10 text-info px-3 py-2 rounded-pill">کاربر عادی</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <div class="d-flex gap-2">
+                            <span class="badge bg-light text-dark border" title="تعداد پست‌ها"><i class="bi bi-file-text"></i> {{ u.posts|length }}</span>
+                            <span class="badge bg-light text-dark border" title="تعداد نظرات"><i class="bi bi-chat"></i> {{ u.comments|length }}</span>
+                        </div>
+                    </td>
+                    <td>
+                        <span class="text-muted small fw-bold">{{ u.join_date.strftime('%Y/%m/%d') }}</span>
+                        <br>
+                        <span class="text-muted small" style="font-size: 11px;">{{ u.join_date.strftime('%H:%M') }}</span>
+                    </td>
+                    <td class="text-end pe-4">
+                        <div class="btn-group">
+                            <a href="/admin/user/{{ u.id }}" class="btn btn-sm btn-outline-secondary" title="مشاهده جزئیات"><i class="bi bi-eye"></i></a>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

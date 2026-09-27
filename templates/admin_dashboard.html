@@ -1,0 +1,168 @@
+{#
+  TechBlog — Flask Blog & Admin Panel
+  Author   : ZERO (Sobhan) — https://github.com/zeroux-dev
+  Telegram : @fesqhli  (https://t.me/fesqhli)
+  License  : MIT — keep this notice when you use or copy this code
+  Copyright (c) 2025-2026 ZERO (Sobhan)
+#}
+{% extends 'admin_dashboard_layout.html' %}
+
+{% block admin_content %}
+<div class="d-flex justify-content-between align-items-center mb-5">
+    <div>
+        <h2 class="fw-bold text-dark">پنل مدیریت</h2>
+        <p class="text-muted">خوش آمدید، ادمین عزیز | {{ now.strftime('%Y-%m-%d') }}</p>
+    </div>
+    <div class="d-flex gap-3">
+        <button class="btn btn-light shadow-sm position-relative">
+            <i class="bi bi-bell fs-5"></i>
+            {% if stats.reports_count > 0 %}
+            <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+                {{ stats.reports_count }}
+            </span>
+            {% endif %}
+        </button>
+    </div>
+</div>
+
+<!-- کارت‌های آمار -->
+<div class="row g-4 mb-5">
+    <div class="col-md-3">
+        <div class="stat-card">
+            <div>
+                <h5 class="text-muted fs-6 mb-1">کاربران کل</h5>
+                <h2 class="fw-bold m-0">{{ stats.users }}</h2>
+            </div>
+            <div class="stat-icon bg-primary bg-opacity-10 text-primary">
+                <i class="bi bi-people"></i>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="stat-card">
+            <div>
+                <h5 class="text-muted fs-6 mb-1">پست‌ها</h5>
+                <h2 class="fw-bold m-0">{{ stats.posts }}</h2>
+            </div>
+            <div class="stat-icon bg-success bg-opacity-10 text-success">
+                <i class="bi bi-file-text"></i>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="stat-card">
+            <div>
+                <h5 class="text-muted fs-6 mb-1">نظرات</h5>
+                <h2 class="fw-bold m-0">{{ stats.comments }}</h2>
+            </div>
+            <div class="stat-icon bg-warning bg-opacity-10 text-warning">
+                <i class="bi bi-chat-dots"></i>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="stat-card">
+            <div>
+                <h5 class="text-muted fs-6 mb-1">بازدیدها</h5>
+                <h2 class="fw-bold m-0">{{ stats.views }}</h2>
+            </div>
+            <div class="stat-icon bg-danger bg-opacity-10 text-danger">
+                <i class="bi bi-eye"></i>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4">
+    <!-- نمودار -->
+    <div class="col-lg-8">
+        <div class="card border-0 shadow-sm p-4 h-100" style="border-radius: 15px;">
+            <h5 class="fw-bold mb-4">آمار فعالیت</h5>
+            <canvas id="mainChart" height="150"></canvas>
+        </div>
+    </div>
+
+    <!-- کاربران جدید -->
+    <div class="col-lg-4">
+        <div class="card border-0 shadow-sm p-4 h-100" style="border-radius: 15px;">
+            <h5 class="fw-bold mb-4">کاربران اخیر</h5>
+            <ul class="list-group list-group-flush">
+                {% for u in recent_users %}
+                <li class="list-group-item border-0 d-flex align-items-center px-0">
+                    <div class="bg-secondary text-white rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 40px; height: 40px;">
+                        {{ u.username[0]|upper }}
+                    </div>
+                    <div>
+                        <h6 class="m-0 fw-bold">{{ u.username }}</h6>
+                        <small class="text-muted">{{ u.join_date.strftime('%Y-%m-%d') }}</small>
+                    </div>
+                </li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+</div>
+
+<!-- گزارشات -->
+<div class="card border-0 shadow-sm p-4 mt-4" style="border-radius: 15px;">
+    <h5 class="fw-bold text-danger mb-4">🚨 گزارش‌های تخلف</h5>
+    {% if reports %}
+    <div class="table-responsive">
+        <table class="table table-hover align-middle">
+            <thead class="table-light">
+                <tr>
+                    <th>شاکی</th>
+                    <th>علت</th>
+                    <th>کامنت</th>
+                    <th>عملیات</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for r in reports %}
+                <tr>
+                    <td>{{ r.user.username }}</td>
+                    <td><span class="badge bg-danger bg-opacity-10 text-danger">{{ r.reason }}</span></td>
+                    <td class="text-muted small">{{ r.comment.body[:40] }}...</td>
+                    <td>
+                        <form action="/admin/report/{{ r.id }}/delete" method="POST" class="d-inline">
+                            <button class="btn btn-sm btn-light text-secondary">نادیده</button>
+                        </form>
+                        <form action="{{ url_for('delete_comment', comment_id=r.comment_id) }}" method="POST" class="d-inline">
+                            <button class="btn btn-sm btn-danger">حذف</button>
+                        </form>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+        <p class="text-center text-muted my-4">هیچ گزارش تخلفی وجود ندارد.</p>
+    {% endif %}
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+    const ctx = document.getElementById('mainChart').getContext('2d');
+    new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: ['کاربران', 'پست‌ها', 'نظرات', 'بازدید'],
+            datasets: [{
+                label: 'آمار کلی',
+                data: [{{ stats.users }}, {{ stats.posts }}, {{ stats.comments }}, {{ stats.views }}],
+                borderColor: '#2a5298',
+                backgroundColor: 'rgba(42, 82, 152, 0.1)',
+                tension: 0.4,
+                fill: true
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: { legend: { display: false } }
+        }
+    });
+</script>
+{% endblock %}

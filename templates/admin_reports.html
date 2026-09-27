@@ -1,0 +1,52 @@
+{#
+  TechBlog — Flask Blog & Admin Panel
+  Author   : ZERO (Sobhan) — https://github.com/zeroux-dev
+  Telegram : @fesqhli  (https://t.me/fesqhli)
+  License  : MIT — keep this notice when you use or copy this code
+  Copyright (c) 2025-2026 ZERO (Sobhan)
+#}
+{% extends 'base.html' %}
+{% block content %}
+<div class="card p-4">
+    <h3 class="mb-4 text-warning"><i class="bi bi-shield-exclamation"></i> گزارشات تخلف کامنت‌ها</h3>
+    
+    {% if reports %}
+    <div class="table-responsive">
+        <table class="table table-dark table-hover" style="background:transparent;">
+            <thead>
+                <tr>
+                    <th>گزارش دهنده</th>
+                    <th>علت</th>
+                    <th>کامنت</th>
+                    <th>نویسنده کامنت</th>
+                    <th>عملیات</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for report in reports %}
+                <tr>
+                    <td>{{ report.user.username }}</td>
+                    <td><span class="badge bg-danger">{{ report.reason }}</span></td>
+                    <td class="text-muted small">{{ report.comment.body[:50] }}...</td>
+                    <td>{{ report.comment.author.username }}</td>
+                    <td>
+                        <div class="d-flex gap-2">
+                            <a href="/read/{{ report.comment.post_id }}" class="btn btn-sm btn-outline-info">مشاهده</a>
+                            <form action="{{ url_for('delete_comment', comment_id=report.comment_id) }}" method="POST">
+                                <button class="btn btn-sm btn-danger">حذف کامنت</button>
+                            </form>
+                            <form action="/admin/report/{{ report.id }}/delete" method="POST">
+                                <button class="btn btn-sm btn-secondary">نادیده گرفتن</button>
+                            </form>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+        <div class="alert alert-success">هیچ گزارش تخلفی وجود ندارد.</div>
+    {% endif %}
+</div>
+{% endblock %}
